@@ -33,10 +33,9 @@ export default function Call() {
     useEffect(() => {
         (async()=>{
             await initialize(params.roomId as string, socketRef, sendTransportRef, recvTransportRef, deviceRef, log, consumersRef);
-            await loadDevices(setSelectedMicrophone, setSelectedCamera, setCameras, setMicrophones);
-            await startStreaming(streamRef, audioTrackRef, videoTrackRef, audioProducerRef, videoProducerRef,sendTransportRef, selectedCamera, selectedCamera, log)
+            await loadDevices(setSelectedMicrophone, setSelectedCamera, setCameras, setMicrophones, selectedCamera, selectedMicrophone);
+            
         })()
-
         return () => {
             sendTransportRef.current?.close();
             recvTransportRef.current?.close();
@@ -48,6 +47,12 @@ export default function Call() {
             streamRef.current?.getTracks().forEach(track => track.stop());
         };
     }, [params.roomId]);
+
+    useEffect(()=>{
+        (async()=>{
+            if (selectedCamera && selectedMicrophone) await startStreaming(streamRef, audioTrackRef, videoTrackRef, audioProducerRef, videoProducerRef,sendTransportRef, selectedCamera, selectedMicrophone, log);
+        })()
+    }, [selectedCamera, selectedMicrophone])
 
     return (
         <>
@@ -93,9 +98,7 @@ export default function Call() {
                         setSelectedMicrophone(e.target.value)
                     }
                 >
-
                     {microphones.map(mic => (
-
                         <option
                             key={mic.deviceId}
                             value={mic.deviceId}
@@ -108,6 +111,18 @@ export default function Call() {
                 </select>
 
             </div>
+            <section>
+                {consumersRef.current.map((elt, index)=>(
+                    <div className="bg-blue h-[330px] w-[330px]" key={index}>
+                        {elt.remoteStream && <video
+                           src={elt.remoteStream}
+                            autoPlay
+                            playsInline
+                            controls={false} 
+                            />}
+                    </div>
+                ))}
+            </section>
         </>
     );
 }

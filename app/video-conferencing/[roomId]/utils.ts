@@ -2,6 +2,7 @@ import { io, Socket } from "socket.io-client";
 import { Device, types } from "mediasoup-client";
 import {Dispatch, RefObject, SetStateAction} from "react";
 import {DefaultEventsMap} from "@socket.io/component-emitter";
+import { error } from "console";
 
 
 export async function initialize(
@@ -49,7 +50,8 @@ export async function initialize(
             });
             const consumer = await recvTransport.consume(params);
             const remoteStream = new MediaStream([consumer.track]);
-            consumersRef.current.push({id: consumer.id, producerId: consumer.producerId, remoteStream})
+            consumersRef.current.push({id: consumer.id, producerId: consumer.producerId, remoteStream});
+            console.log("new remote stream");
         });
 
         //-----------------------------------
@@ -76,9 +78,14 @@ export async function initialize(
 
         sendTransportRef.current = sendTransport;
         recvTransportRef.current = recvTransport;
-
         log("Transports created");
 
+        sendTransportRef.current.addListener('connectionstatechange', (state)=>log("send transport connection state has changed " + state));
+        recvTransportRef.current.addListener('connectionstatechange', (state)=>log("receive transport connection state has changed " + state));
+        
+        sendTransportRef.current.addListener('icegatheringstatechange', (state)=>log("send transport ICE state has changed " + state));
+        recvTransportRef.current.addListener('icegatheringstatechange', (state)=>log("receive transport ICE state has changed " + state));
+        
         //-----------------------------------
         // Send Transport
         //-----------------------------------
@@ -86,6 +93,7 @@ export async function initialize(
             "connect",
             async ({ dtlsParameters }, callback, errback) => {
                 try {
+                    console.log("connecting transport...")
                     await socket.emitWithAck(
                         "connectSenderTransport",
                         dtlsParameters
@@ -165,40 +173,59 @@ export async function startStreaming(
     selectedMicrophone:string,
     log: (message: string)=>void
 ){
-    const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-    });
-    const sendTransport = sendTransportRef.current;
-    streamRef.current = stream;
-    audioTrackRef.current = stream.getAudioTracks()[0];
-    videoTrackRef.current = stream.getVideoTracks()[0];
-    if (sendTransport){
-        log("setting up streamer")
-        console.log(sendTransport.connectionState);
-        //produce audio
-        audioProducerRef.current = await sendTransport.produce({
-                track: audioTrackRef.current,
-                appData: {
-                    mediaTag: "audio"
+    try{
+        console.log(selectedCamera, selectedMicrophone);
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                deviceId: {
+                    exact: selectedMicrophone
                 }
-            });
-
-        log("audio track track fed into producer")
-
-        //produce video
-        videoProducerRef.current = await sendTransport.produce({
-                track: videoTrackRef.current,
-                appData: {
-                    mediaTag: "camera"
+            },
+            video: {
+                deviceId: {
+                    exact: selectedCamera
                 }
-            });
-        log("video track fed into producer")
-    }
-    else{
-        log("Error with initialization process");
-    }
+            }
+        });
+        const sendTransport = sendTransportRef.current;
+        streamRef.current = stream;
+        audioTrackRef.current = stream.getAudioTracks()[0];
+        videoTrackRef.current = stream.getVideoTracks()[0];
+        if (sendTransport){
+            log("setting up streamer")
+            console.log(sendTransport.connectionState);
+            //produce audio
+            audioProducerRef.current = await sendTransport.produce({
+                    track: audioTrackRef.current,
+                    appData: {
+                        mediaTag: "audio"
+                    }
+                });
 
+            log("audio track track fed into producer")
+
+            //produce video
+            videoProducerRef.current = await sendTransport.produce({
+                    track: videoTrackRef.current,
+                    appData: {
+                        mediaTag: "camera"
+                    }
+                });
+            log("video track fed into producer");
+            console.log("2", sendTransport.connectionState);
+        }
+        else{
+            log("Error with initialization process");
+        }
+    }
+    catch(err){
+        console.log(err);
+        if (err instanceof DOMException) {
+            console.log("Name:", err.name);
+            console.log("Message:", err.message);
+            console.log("Constraint:", (err as any).constraint);
+        }
+    }
 }
 
 
@@ -207,35 +234,52 @@ export async function loadDevices(
     setSelectedMicrophone: Dispatch<SetStateAction<string>>,
     setSelectedCamera: Dispatch<SetStateAction<string>>,
     setCameras: Dispatch<SetStateAction<MediaDeviceInfo[]>>,
-    setMicrophones: Dispatch<SetStateAction<MediaDeviceInfo[]>>
+    setMicrophones: Dispatch<SetStateAction<MediaDeviceInfo[]>>,
+    selectedCamera: string,
+    selectedMicrophone: string
 ) {
 
-    // Ask permission once
-    const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-    });
+    try{
+        // Ask permission once
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        });
 
-    // Stop the temporary stream
-    stream.getTracks().forEach(track => track.stop());
+        // // Stop the temporary stream
+        stream.getTracks().forEach(track => track.stop());
 
-    const devices = await navigator.mediaDevices.enumerateDevices();
+        const devices = await navigator.mediaDevices.enumerateDevices();
 
-    const cams = devices.filter(
-        d => d.kind === "videoinput"
-    );
+        const cams = devices.filter(
+            d => d.kind === "videoinput"
+        );
 
-    const mics = devices.filter(
-        d => d.kind === "audioinput"
-    );
+        const mics = devices.filter(
+            d => d.kind === "audioinput"
+        );
 
-    setCameras(cams);
-    setMicrophones(mics);
+        setCameras(cams);
+        setMicrophones(mics);
 
-    if (cams.length > 0)
-        setSelectedCamera(cams[0].deviceId);
+        if (cams.length > 0) {
+            setSelectedCamera(cams[0].deviceId);
+            console.log("camera set to ",cams[0].deviceId)
+        }
+        else{
+            console.log("could not find camera");
+        }
 
-    if (mics.length > 0)
-        setSelectedMicrophone(mics[0].deviceId);
+        if (mics.length > 0) {
+            setSelectedMicrophone(mics[0].deviceId);
+            console.log("set mic to ", mics[0].deviceId)
+        }
+        else{
+            console.log("No mike found");
+        }
+    }
+    catch(err){
+        console.log(err)
+    }
 
 }
