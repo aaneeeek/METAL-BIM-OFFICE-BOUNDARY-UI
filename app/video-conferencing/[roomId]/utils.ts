@@ -53,27 +53,33 @@ export async function initialize(
                 producerId,
                 rtpCapabilities: device.recvRtpCapabilities,
             });
-            console.log("consume params:", params);
-            const consumer = await recvTransport.consume(params);
-            consumer.resume();
-            consumer.on('trackended', () => log('Consumer track ended'));
-            consumer.on('transportclose', () => log('Consumer transport closed'));
-            log(`Track muted: ${consumer.track.muted}, readyState: ${consumer.track.readyState}`);
+            if (params.id && params.producerId){
+                console.log("consume params:", params);
+                const consumer = await recvTransport.consume(params);
+                consumer.resume();
+                consumer.on('trackended', () => log('Consumer track ended'));
+                consumer.on('transportclose', () => log('Consumer transport closed'));
+                log(`Track muted: ${consumer.track.muted}, readyState: ${consumer.track.readyState}`);
 
-            const remoteStreamTrack = consumer.track;
-            if (consumersRef.current.get(socketId)) {
-                const index = consumersRef.current.get(socketId)?.findIndex(elt => elt.kind === consumer.kind); // remove existing tracks of the same kind
-                //before adding a new one
-                if (index !== undefined && index !== -1) consumersRef.current.get(socketId)?.splice(index);
-                consumersRef.current.get(socketId)?.push({id: consumer.id, producerId: consumer.producerId, remoteStreamTrack, kind: consumer.kind});
+                const remoteStreamTrack = consumer.track;
+                if (consumersRef.current.get(socketId)) {
+                    const index = consumersRef.current.get(socketId)?.findIndex(elt => elt.kind === consumer.kind); // remove existing tracks of the same kind
+                    //before adding a new one
+                    if (index !== undefined && index !== -1) consumersRef.current.get(socketId)?.splice(index);
+                    consumersRef.current.get(socketId)?.push({id: consumer.id, producerId: consumer.producerId, remoteStreamTrack, kind: consumer.kind});
+                }
+                else {
+                    consumersRef.current.set(socketId, [{id: consumer.id, producerId: consumer.producerId, remoteStreamTrack, kind: consumer.kind}]);
+                }
+                console.log("new remote stream");
+                console.log("socket id ", socketId);
+                console.log('len remote refs for this socket = ', consumersRef.current.get(socketId)?.length)
             }
             else {
-                consumersRef.current.set(socketId, [{id: consumer.id, producerId: consumer.producerId, remoteStreamTrack, kind: consumer.kind}]);
+                console.log("could not consume . Invalid parameters ", params)
             }
-            console.log("new remote stream");
-            console.log("socket id ", socketId);
-            console.log('len remote refs for this socket = ', consumersRef.current.get(socketId)?.length)
-        });
+
+                    });
 
         //-----------------------------------
         // Load Router Capabilities
