@@ -111,19 +111,19 @@ export default function Call() {
 
             </div>
             <section>
-                {consumersRef.current.entries().map(([key, value], index)=> {
+                {Array.from(consumersRef.current.entries()).map(([key, value]) => {
                     let mediaStream = new MediaStream();
-                    if (value.length < 2) value.forEach((elt)=>mediaStream.addTrack(elt.remoteStreamTrack));
-                    return(
-                    <div className="bg-blue h-[330px] w-[330px]" key={index}>
-                        {<video
-                            src={mediaStream}
-                            autoPlay
-                            playsInline
-                            controls={false}
-                        />}
-                    </div>
-                )})}
+                    if (value.length < 2) value.forEach((elt) => mediaStream.addTrack(elt.remoteStreamTrack));
+                    return (
+                        <div className="bg-blue h-[330px] w-[330px]" key={key}>
+                            {<video
+                                autoPlay
+                                playsInline
+                                controls={true}
+                            />}
+                        </div>
+                    )
+                })}
             </section>
         </>
     );
