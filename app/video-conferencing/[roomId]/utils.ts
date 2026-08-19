@@ -180,12 +180,13 @@ export async function initialize(
             }
         );
         log("Initialization complete");
+        socket.emit("getExistingProducers");
     } catch (err) {
         console.error(err);
         log("Initialization failed");
     }
 
-    socket.emit("getExistingProducers");
+
 
 }
 
