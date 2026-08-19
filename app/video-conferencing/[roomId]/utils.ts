@@ -54,11 +54,16 @@ export async function initialize(
                 rtpCapabilities: device.recvRtpCapabilities,
             });
             const consumer = await recvTransport.consume(params);
+            consumer.resume();
+            consumer.on('trackended', () => log('Consumer track ended'));
+            consumer.on('transportclose', () => log('Consumer transport closed'));
+            log(`Track muted: ${consumer.track.muted}, readyState: ${consumer.track.readyState}`);
+
             const remoteStreamTrack = consumer.track;
             if (consumersRef.current.get(socketId)) {
                 const index = consumersRef.current.get(socketId)?.findIndex(elt => elt.kind === consumer.kind); // remove existing tracks of the same kind
                 //before adding a new one
-                if (index && index !== -1) consumersRef.current.get(socketId)?.splice(index);
+                if (index !== undefined && index !== -1) consumersRef.current.get(socketId)?.splice(index);
                 consumersRef.current.get(socketId)?.push({id: consumer.id, producerId: consumer.producerId, remoteStreamTrack, kind: consumer.kind});
             }
             else {
