@@ -113,10 +113,15 @@ export default function Call() {
             <section>
                 {Array.from(consumersRef.current.entries()).map(([key, value]) => {
                     let mediaStream = new MediaStream();
-                    if (value.length < 2) value.forEach((elt) => mediaStream.addTrack(elt.remoteStreamTrack));
+                    value.forEach((elt) => mediaStream.addTrack(elt.remoteStreamTrack));
                     return (
                         <div className="bg-blue h-[330px] w-[330px]" key={key}>
                             {<video
+                                ref={(el) => {
+                                    if (el) {
+                                        el.srcObject = mediaStream;
+                                    }
+                                }}
                                 autoPlay
                                 playsInline
                                 controls={true}
