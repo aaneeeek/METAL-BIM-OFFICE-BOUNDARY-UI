@@ -33,6 +33,11 @@ export async function initialize(
             });
         });
 
+        
+        socket.on("socketdisconnected", (disconnectedSocket) => {
+            consumersRef.current.delete(disconnectedSocket);
+        });
+
         //-----------------------------------
         // Create Device
         //-----------------------------------
@@ -60,6 +65,8 @@ export async function initialize(
                 consumersRef.current.set(socketId, [{id: consumer.id, producerId: consumer.producerId, remoteStreamTrack, kind: consumer.kind}]);
             }
             console.log("new remote stream");
+            console.log("socket id ", socketId);
+            console.log('len remote refs for this socket = ', consumersRef.current.get(socketId)?.length)
         });
 
         //-----------------------------------
@@ -203,14 +210,14 @@ export async function startStreaming(
             log("setting up streamer")
             console.log(sendTransport.connectionState);
             //produce audio
-            audioProducerRef.current = await sendTransport.produce({
-                    track: audioTrackRef.current,
-                    appData: {
-                        mediaTag: "audio"
-                    }
-                });
+            // audioProducerRef.current = await sendTransport.produce({
+            //         track: audioTrackRef.current,
+            //         appData: {
+            //             mediaTag: "audio"
+            //         }
+            //     });
 
-            log("audio track track fed into producer")
+            // log("audio track track fed into producer")
 
             //produce video
             videoProducerRef.current = await sendTransport.produce({
