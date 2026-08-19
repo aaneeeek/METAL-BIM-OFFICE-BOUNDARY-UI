@@ -173,6 +173,7 @@ export async function initialize(
                     );
                     callback();
                     log("Receive transport connected");
+                    socket.emit("getExistingProducers");
                 } catch (err) {
                     errback(err as Error);
                 }
