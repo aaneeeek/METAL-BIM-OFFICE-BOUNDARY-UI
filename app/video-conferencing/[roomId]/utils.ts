@@ -12,7 +12,7 @@ export async function initialize(
     recvTransportRef: RefObject<types.Transport<types.AppData> | null>,
     deviceRef: RefObject<Device | null>,
     log: (message: string) => void,
-    consumersRef:  RefObject<{ id: string, producerId: string, remoteStream: MediaStream }[]>
+    consumersRef:   RefObject<Map<string, { id: string; producerId: string; remoteStreamTrack: MediaStreamTrack; kind: string }[]>>
     ) {
     try {
         //-----------------------------------
@@ -49,8 +49,16 @@ export async function initialize(
                 rtpCapabilities: device.recvRtpCapabilities,
             });
             const consumer = await recvTransport.consume(params);
-            const remoteStream = new MediaStream([consumer.track]);
-            consumersRef.current.push({id: consumer.id, producerId: consumer.producerId, remoteStream});
+            const remoteStreamTrack = consumer.track;
+            if (consumersRef.current.get(socketId)) {
+                const index = consumersRef.current.get(socketId)?.findIndex(elt => elt.kind === consumer.kind); // remove existing tracks of the same kind
+                //before adding a new one
+                if (index && index !== -1) consumersRef.current.get(socketId)?.splice(index);
+                consumersRef.current.get(socketId)?.push({id: consumer.id, producerId: consumer.producerId, remoteStreamTrack, kind: consumer.kind});
+            }
+            else {
+                consumersRef.current.set(socketId, [{id: consumer.id, producerId: consumer.producerId, remoteStreamTrack, kind: consumer.kind}]);
+            }
             console.log("new remote stream");
         });
 
@@ -65,7 +73,6 @@ export async function initialize(
         });
 
         log("Device loaded");
-
         //-----------------------------------
         // Create transports
         //-----------------------------------

@@ -18,9 +18,7 @@ export default function Call() {
     const videoTrackRef = useRef<MediaStreamTrack | null>(null);
     const audioProducerRef = useRef<types.Producer | null>(null);
     const videoProducerRef = useRef<types.Producer | null>(null);
-    const consumersRef = useRef<{
-        socketId: {id: string, producerId: string, remoteStream: MediaStream}
-        }[]>([]);
+    const consumersRef = useRef<Map<string, {id: string, producerId: string, remoteStreamTrack: MediaStreamTrack, kind: string}[]>>(new Map());
     const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
     const [microphones, setMicrophones] = useState<MediaDeviceInfo[]>([]);
     const [selectedCamera, setSelectedCamera] = useState("");
@@ -113,16 +111,19 @@ export default function Call() {
 
             </div>
             <section>
-                {consumersRef.current.map((elt, index)=>(
+                {consumersRef.current.entries().map(([key, value], index)=> {
+                    let mediaStream = new MediaStream();
+                    if (value.length < 2) value.forEach((elt)=>mediaStream.addTrack(elt.remoteStreamTrack));
+                    return(
                     <div className="bg-blue h-[330px] w-[330px]" key={index}>
-                        {elt.remoteStream && <video
-                           src={elt.remoteStream}
+                        {<video
+                            src={mediaStream}
                             autoPlay
                             playsInline
-                            controls={false} 
-                            />}
+                            controls={false}
+                        />}
                     </div>
-                ))}
+                )})}
             </section>
         </>
     );
