@@ -19,7 +19,8 @@ export default function Call() {
     const audioProducerRef = useRef<types.Producer | null>(null);
     const videoProducerRef = useRef<types.Producer | null>(null);
     const consumersRef = useRef<{
-        id: string, producerId: string, remoteStream: MediaStream}[]>([]);
+        socketId: {id: string, producerId: string, remoteStream: MediaStream}
+        }[]>([]);
     const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
     const [microphones, setMicrophones] = useState<MediaDeviceInfo[]>([]);
     const [selectedCamera, setSelectedCamera] = useState("");

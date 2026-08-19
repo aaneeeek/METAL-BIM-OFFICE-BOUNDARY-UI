@@ -43,7 +43,7 @@ export async function initialize(
 
         log("Device created");
 
-        socket.on('newProducer', async ({ producerId }) => {
+        socket.on('newProducer', async ({ producerId, socketId }) => {
             const params = await socket.emitWithAck('clientConsume', {
                 producerId,
                 rtpCapabilities: device.recvRtpCapabilities,
@@ -189,6 +189,7 @@ export async function startStreaming(
         });
         const sendTransport = sendTransportRef.current;
         streamRef.current = stream;
+        const tracks = stream.getTracks()[0];
         audioTrackRef.current = stream.getAudioTracks()[0];
         videoTrackRef.current = stream.getVideoTracks()[0];
         if (sendTransport){
