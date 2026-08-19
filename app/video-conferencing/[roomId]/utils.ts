@@ -53,6 +53,7 @@ export async function initialize(
                 producerId,
                 rtpCapabilities: device.recvRtpCapabilities,
             });
+            console.log("consume params:", params);
             const consumer = await recvTransport.consume(params);
             consumer.resume();
             consumer.on('trackended', () => log('Consumer track ended'));
