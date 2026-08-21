@@ -215,7 +215,6 @@ export async function startStreaming(
     selectedCamera:string,
     selectedMicrophone:string,
     log: (message: string)=>void,
-    localVideoRef: RefObject<HTMLVideoElement | null>
 ){
     try{
         console.log(selectedCamera, selectedMicrophone);

@@ -79,6 +79,13 @@ export default function Call() {
         })()
     }, [selectedCamera, selectedMicrophone]);
 
+    useEffect(() => {
+        if (videoTrackRef.current && localVideoRef.current) {
+            localVideoRef.current.srcObject = new MediaStream([videoTrackRef.current]);
+            await localVideoRef.current.play()
+        }
+    }, [videoTrackRef, localVideoRef]);
+
     return (
         <main className="min-h-screen bg-slate-950 p-3 text-white sm:p-5">
             <section className="mx-auto flex flex-col lg:flex-row min-h-[calc(100vh-24px)] max-w-7xl gap-4">
