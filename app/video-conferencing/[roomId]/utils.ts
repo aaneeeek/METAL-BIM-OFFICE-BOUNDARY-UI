@@ -1,8 +1,9 @@
 import { io, Socket } from "socket.io-client";
 import { Device, types } from "mediasoup-client";
-import {Dispatch, RefObject, SetStateAction} from "react";
+import React, {Dispatch, RefObject, SetStateAction} from "react";
 import {DefaultEventsMap} from "@socket.io/component-emitter";
 import { error } from "console";
+import {Message} from "postcss";
 
 
 export async function initialize(
@@ -12,7 +13,12 @@ export async function initialize(
     recvTransportRef: RefObject<types.Transport<types.AppData> | null>,
     deviceRef: RefObject<Device | null>,
     log: (message: string) => void,
-    consumersRef:   RefObject<Map<string, { id: string; producerId: string; remoteStreamTrack: MediaStreamTrack; kind: string }[]>>
+    consumersRef:   RefObject<Map<string, { id: string; producerId: string; remoteStreamTrack: MediaStreamTrack; kind: string }[]>>,
+    setMessages:  Dispatch<SetStateAction<{
+        id: number
+        author: string
+        content: string
+    }[]>>,
     ) {
     try {
         //-----------------------------------
@@ -37,6 +43,13 @@ export async function initialize(
         socket.on("socketdisconnected", (disconnectedSocket) => {
             consumersRef.current.delete(disconnectedSocket);
         });
+
+        socket.on("message", (message, author) => {
+            setMessages((current) => [
+                ...current,
+                { id: Date.now(), author, content: message },
+            ]);
+        })
 
         //-----------------------------------
         // Create Device
@@ -314,3 +327,29 @@ export async function loadDevices(
     }
 
 }
+
+
+
+export const sendMessage = (
+    event: React.FormEvent,
+    setMessages:  Dispatch<SetStateAction<{
+        id: number
+        author: string
+        content: string
+    }[]>>,
+    setMessage: Dispatch<SetStateAction<string>>,
+    message: string,
+    socketRef: RefObject<Socket<DefaultEventsMap, DefaultEventsMap> | null>
+    ) => {
+    event.preventDefault();
+
+    const content = message.trim();
+    if (!content) return;
+
+    socketRef.current?.emit("message", content);
+    setMessages((current) => [
+        ...current,
+        { id: Date.now(), author: "Vous", content },
+    ]);
+    setMessage("");
+};
