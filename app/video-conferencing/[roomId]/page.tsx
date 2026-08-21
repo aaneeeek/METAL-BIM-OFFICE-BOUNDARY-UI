@@ -80,10 +80,13 @@ export default function Call() {
     }, [selectedCamera, selectedMicrophone]);
 
     useEffect(() => {
-        if (videoTrackRef.current && localVideoRef.current) {
-            localVideoRef.current.srcObject = new MediaStream([videoTrackRef.current]);
-            await localVideoRef.current.play()
-        }
+        (async()=>{
+            if (videoTrackRef.current && localVideoRef.current) {
+                localVideoRef.current.srcObject = new MediaStream([videoTrackRef.current]);
+                await localVideoRef.current.play()
+            }
+        })()
+
     }, [videoTrackRef, localVideoRef]);
 
     return (
