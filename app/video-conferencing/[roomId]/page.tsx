@@ -81,7 +81,7 @@ export default function Call() {
 
     return (
         <main className="min-h-screen bg-slate-950 p-3 text-white sm:p-5">
-            <section className="mx-auto flex min-h-[calc(100vh-24px)] max-w-7xl gap-4">
+            <section className="mx-auto flex flex-col lg:flex-row min-h-[calc(100vh-24px)] max-w-7xl gap-4">
                 {/* Call area */}
                 <div className="flex min-w-0 flex-1 flex-col rounded-2xl border border-white/10 bg-slate-900">
                     <header className="flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5">
@@ -223,10 +223,12 @@ export default function Call() {
 
                 {/* Collapsible chat */}
                 <aside
-                    className={`hidden overflow-hidden rounded-2xl border border-white/10 bg-slate-900 transition-all duration-300 lg:flex lg:flex-col`}
-                    style={{
-                        width: isChatOpen?"320px":"56px"
-                    }}
+                    className={`
+                    flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-900 transition-all duration-300
+                    w-full 
+                    ${isChatOpen ? 'h-80 lg:h-auto' : 'h-14 lg:h-auto'}
+                    ${isChatOpen ? 'lg:w-80' : 'lg:w-14'}
+                `}
                 >
                     <div className="flex items-center justify-between border-b border-white/10 p-3">
                         {isChatOpen && <h2 className="font-semibold">Messages</h2>}
