@@ -77,7 +77,13 @@ export default function Call() {
         (async()=>{
             if (selectedCamera && selectedMicrophone) await startStreaming(streamRef, audioTrackRef, videoTrackRef, audioProducerRef, videoProducerRef,sendTransportRef, selectedCamera, selectedMicrophone, log);
         })()
-    }, [selectedCamera, selectedMicrophone])
+    }, [selectedCamera, selectedMicrophone]);
+
+    useEffect(() => {
+        if (videoTrackRef.current && localVideoRef.current) {
+            localVideoRef.current.srcObject = new MediaStream([videoTrackRef.current]);
+        }
+    }, [videoTrackRef, localVideoRef]);
 
     return (
         <main className="min-h-screen bg-slate-950 p-3 text-white sm:p-5">
