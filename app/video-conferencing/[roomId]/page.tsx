@@ -213,7 +213,7 @@ export default function Call() {
                                     />
 
                                     <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2 py-1 text-xs font-medium">
-                  Participant
+                  {participantId}
                 </span>
                                 </article>
                             );
