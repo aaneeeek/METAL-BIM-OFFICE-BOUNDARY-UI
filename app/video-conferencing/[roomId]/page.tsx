@@ -138,11 +138,11 @@ export default function Call() {
                                         <button
                                             type="button"
                                             onClick={toggleMicrophone}
-                                            className={`rounded-lg px-3 py-2 text-sm font-medium ${
-                                                isMicMuted
-                                                    ? "bg-red-500 text-white"
-                                                    : "bg-white/10 hover:bg-white/15"
-                                            }`}
+                                            className={`rounded-lg px-3 py-2 text-sm font-medium`}
+                                            style={{
+                                                color: isMicMuted? "white":"black",
+                                                backgroundColor: isMicMuted?"#fb2c36":"rgba(255, 255, 255, 0.1)"
+                                            }}
                                         >
                                             {isMicMuted ? "Activer le micro" : "Couper le micro"}
                                         </button>
@@ -150,11 +150,11 @@ export default function Call() {
                                         <button
                                             type="button"
                                             onClick={toggleCamera}
-                                            className={`rounded-lg px-3 py-2 text-sm font-medium ${
-                                                isCameraOff
-                                                    ? "bg-red-500 text-white"
-                                                    : "bg-white/10 hover:bg-white/15"
-                                            }`}
+                                            className={`rounded-lg px-3 py-2 text-sm font-medium`}
+                                            style={{
+                                                color: isCameraOff? "white":"black",
+                                                backgroundColor: isCameraOff?"#fb2c36":"rgba(255, 255, 255, 0.1)"
+                                            }}
                                         >
                                             {isCameraOff ? "Activer caméra" : "Couper caméra"}
                                         </button>
@@ -173,9 +173,10 @@ export default function Call() {
                                 autoPlay
                                 muted
                                 playsInline
-                                className={`h-full w-full object-cover ${
-                                    isCameraOff ? "hidden" : ""
-                                }`}
+                                className={`h-full w-full object-cover`}
+                                style={{
+                                    display: isCameraOff?'none':'block'
+                            }}
                             />
 
                             {isCameraOff && (
@@ -222,9 +223,10 @@ export default function Call() {
 
                 {/* Collapsible chat */}
                 <aside
-                    className={`hidden overflow-hidden rounded-2xl border border-white/10 bg-slate-900 transition-all duration-300 lg:flex lg:flex-col ${
-                        isChatOpen ? "w-80" : "w-14"
-                    }`}
+                    className={`hidden overflow-hidden rounded-2xl border border-white/10 bg-slate-900 transition-all duration-300 lg:flex lg:flex-col`}
+                    style={{
+                        width: isChatOpen?"320px":"56px"
+                    }}
                 >
                     <div className="flex items-center justify-between border-b border-white/10 p-3">
                         {isChatOpen && <h2 className="font-semibold">Messages</h2>}
