@@ -214,7 +214,8 @@ export async function startStreaming(
     sendTransportRef:  RefObject<types.Transport<types.AppData> | null>,
     selectedCamera:string,
     selectedMicrophone:string,
-    log: (message: string)=>void
+    log: (message: string)=>void,
+    localVideoRef: RefObject<HTMLVideoElement | null>
 ){
     try{
         console.log(selectedCamera, selectedMicrophone);
@@ -235,6 +236,8 @@ export async function startStreaming(
         const tracks = stream.getTracks()[0];
         audioTrackRef.current = stream.getAudioTracks()[0];
         videoTrackRef.current = stream.getVideoTracks()[0];
+        localVideoRef.current?.srcObject = new MediaStream([videoTrackRef.current]);
+        localVideoRef.current?.play();
         if (sendTransport){
             log("setting up streamer")
             console.log(sendTransport.connectionState);
